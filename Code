@@ -1,0 +1,118 @@
+!pip install pandas
+!pip install scikit-learn
+
+import pandas as pd
+from pandas.plotting import scatter_matrix
+import matplotlib.pyplot as plt
+from sklearn import model_selection
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn. neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/iris.csv"
+name = ['sepal-length','sepal-width','petal-length','petal-width','class']
+df = pd.read_csv(url,names=name)
+
+print("\n\nDimensions of the data: \n",df.shape)
+print("\n\nFirst 10 lines of the data: \n",df.head(10))
+print("\n\nLast 10 lines of the data \n",df.tail(10))
+print("\n\nStatistical summary of data",df.describe())
+print("\n\Group by class",df.groupby('class').size())
+
+# Data Visualizations
+print("\n\nBoxer and Whisker Plot\n")
+df.plot(kind='box', subplots=True, layout=(2,2), sharex=False, sharey=False)
+plt.show()
+
+#Histogram
+print("\n\nHistogram\n")
+df.hist()
+plt.show
+
+# scatter lpot
+print("\n\nscatter plot\n")
+scatter_matrix(df)
+plt.show
+
+
+# validation
+
+print("\n\n Train the model")
+array = df.values
+X = array[:,0:4]
+Y = array[:,4]
+validation_size = 0.2
+seed = 7
+x_train, x_validation, y_train, y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state = seed)
+# TEST OPTIONS AND EVALUATION MATRIX
+#CHECK THE ALGOTITHMS
+seed=7
+scoring = 'accuracy'
+
+#BUILD THE MODELS
+
+#SPOT CHECK ALGORITHMS
+
+print('\n\n\nSpot Check Algorithms\n')
+models=[]
+models.append(('LR', LogisticRegression(solver='liblinear', multi_class = 'ovr')))
+models.append(('LDA',LinearDiscriminantAnalysis()))
+models.append(('KMN', KNeighborsClassifier()))
+models.append(('CART',DecisionTreeClassifier()))
+models.append(('NB', GaussianNB()))
+#models.append(('SVM', SVC(gamma='auto')))
+models.append(('SVM',SVC()))
+
+
+#EVALUATE EACH MODEL
+print("\n\n\nEvaluate Each Model in Turn\n")
+results=[]
+names = []
+for name, model in models:
+    kfold = model_selection. KFold (n_splits=10, random_state=seed, shuffle=True)
+    cv_results = model_selection.cross_val_score (model, x_train, y_train, cv=kfold, scoring=scoring)
+    results.append(cv_results)
+    names.append(name)
+    msg="%s:%f(%f)" %(name, cv_results.mean(), cv_results.std())
+    print('Accuracy Score: ', msg)
+   
+
+#PLOTTING THE FIGURES 
+print("\n\n\nOne Way to Plot the Figures to Compare the Results of Different Models\n") 
+plt.boxplot(results, labels=names)
+plt.title("Algorithm Comparison")
+plt.show()
+
+#COMPARING EACH ALGORITHM
+print("\nAnother way to Plot the Figures to Compare the Results of Different Models\n")
+fig = plt.figure()
+fig.suptitle('Algorithm Comparsion')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels (names)
+plt.show()
+
+#MAKE PREDICTIONS ON VALIDATION DATASETS
+#MAKE PREDICTIONS USING KNN 
+print('\nMake Predictions Using KNN') 
+knn = KNeighborsClassifier() 
+knn.fit(x_train, y_train) 
+predictions = knn.predict(x_validation)
+print('\nKNN Accuracy Score: ', accuracy_score(y_validation, predictions)) 
+print('\nKNN Confusion Matrix: \n', confusion_matrix(y_validation, predictions))
+print('\nKNN Classification Report: \n', classification_report (y_validation, predictions))
+#MAKE PREDICTIONS USING SVC
+print('\nMake Predictions Using SVM')
+svm=SVC()
+svm.fit(x_train, y_train)
+predictions = svm.predict(x_validation)
+print('\nSVM Accuracy Score: ', accuracy_score (y_validation, predictions))
+print('\nSVM Confusion Matrix: \n', confusion_matrix(y_validation, predictions))
+print('\n5VM Classification Report: \n', classification_report (y_validation, predictions))
+
